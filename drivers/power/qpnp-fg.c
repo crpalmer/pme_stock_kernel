@@ -2610,7 +2610,7 @@ wait:
 			&chip->sram_access_revoked,
 			msecs_to_jiffies(SRAM_TIMEOUT_MS));
 
-	
+	/* If we were interrupted wait again one more time. */
 	if (ret == -ERESTARTSYS && !tried_again) {
 		tried_again = true;
 		goto wait;
