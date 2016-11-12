@@ -42,6 +42,16 @@
 int early_rtb_stat = EARLY_RTB_INIT;
 #endif
 
+/* Write
+ * 1) 3 bytes sentinel
+ * 2) 1 bytes of log type
+ * 3) 8 bytes of where the caller came from
+ * 4) 4 bytes index
+ * 4) 8 bytes extra data from the caller
+ * 5) 8 bytes of timestamp
+ *
+ * Total = 32 bytes.
+ */
 struct msm_rtb_layout {
 	unsigned char sentinel[3];
 	unsigned char log_type;
@@ -71,7 +81,7 @@ static atomic_t msm_rtb_idx;
 
 static struct msm_rtb_state msm_rtb = {
 #if defined(CONFIG_HTC_DEBUG_RTB)
-	
+	/* remove msm_rtb.filter from cmdline to control the filter here */
 	.filter = (1 << LOGK_READL)|(1 << LOGK_WRITEL)|(1 << LOGK_LOGBUF)|(1 << LOGK_HOTPLUG)|(1 << LOGK_CTXID)|(1 << LOGK_IRQ)|(1 << LOGK_DIE)|(1 << LOGK_INITCALL)|(1 << LOGK_SOFTIRQ),
 #else
 	.filter = 1 << LOGK_LOGBUF,
@@ -89,7 +99,7 @@ void msm_rtb_disable(void)
 	return;
 }
 EXPORT_SYMBOL(msm_rtb_disable);
-#endif 
+#endif /* CONFIG_HTC_DEBUG_RTB */
 
 static int msm_rtb_panic_notifier(struct notifier_block *this,
 					unsigned long event, void *ptr)
@@ -272,7 +282,7 @@ int htc_early_rtb_init(void)
 		return 1;
 	}
 
-	
+	/* Start to search DTB for RTB setting */
 	dt_node = of_find_node_by_name(NULL, rtb_node_name);
 
 	if(dt_node == NULL) {
@@ -291,7 +301,7 @@ int htc_early_rtb_init(void)
 		early_rtb_stat = EARLY_RTB_ERROR;
 		return 1;
 	}
-	
+	/* End of DTB Searching */
 
 	msm_rtb.size = resource_size(&r);
 	msm_rtb.phys = r.start;
@@ -340,9 +350,9 @@ int htc_early_rtb_deinit(void)
 	int backup_enabled = msm_rtb.enabled;
 
 	if(early_rtb_stat == EARLY_RTB_RUNNING) {
-		
-		
-		
+		/* Doesn't want to add extra protection to increase RTB overhead. */
+		/* Try to put delay here for all the RTB user finishing current   */
+		/* job, no one could write early-rtb after set to EARLY_RTB_STOP. */
 		early_rtb_stat = EARLY_RTB_STOP;
 		smp_mb();
 		mdelay(10);

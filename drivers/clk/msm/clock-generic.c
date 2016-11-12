@@ -24,6 +24,7 @@
 #include <htc_mnemosyne/htc_footprint.h>
 #endif
 
+/* ==================== Mux clock ==================== */
 
 static int mux_parent_to_src_sel(struct mux_clk *mux, struct clk *p)
 {
@@ -105,6 +106,10 @@ static int mux_set_rate(struct clk *c, unsigned long rate)
 #if defined(CONFIG_HTC_DEBUG_FOOTPRINT)
 	set_acpuclk_footprint_by_clk(c, ACPU_BEFORE_SAFE_PARENT_INIT);
 #endif
+	/*
+	 * Check if one of the possible parents is already at the requested
+	 * rate.
+	 */
 	for (i = 0; i < mux->num_parents && mux->try_get_rate; i++) {
 		struct clk *p = mux->parents[i].src;
 		if (p->rate == rate && clk_round_rate(p, rate) == rate) {
@@ -129,6 +134,13 @@ static int mux_set_rate(struct clk *c, unsigned long rate)
 #if defined(CONFIG_HTC_DEBUG_FOOTPRINT)
 	set_acpuclk_footprint_by_clk(c, ACPU_BEFORE_SET_SAFE_RATE);
 #endif
+	/*
+	 * Switch to safe parent since the old and new parent might be the
+	 * same and the parent might temporarily turn off while switching
+	 * rates. If the mux can switch between distinct sources safely
+	 * (indicated by try_new_parent), and the new source is not the current
+	 * parent, do not switch to the safe parent.
+	 */
 	if (mux->safe_sel >= 0 &&
 		!(mux->try_new_parent && (new_parent != c->parent))) {
 		/*
@@ -886,6 +898,10 @@ static enum handoff mux_div_clk_handoff(struct clk *c)
 	unsigned int numer;
 
 	parent_rate = clk_get_rate(c->parent);
+	/*
+	 * div values are doubled for half dividers.
+	 * Adjust for that by picking a numer of 2.
+	 */
 	numer = md->data.is_half_divider ? 2 : 1;
 
 	if (md->data.div) {
@@ -900,6 +916,15 @@ static enum handoff mux_div_clk_handoff(struct clk *c)
 			? HANDOFF_ENABLED_CLK
 			: HANDOFF_DISABLED_CLK;
 
+	/*
+	 * If this function returns 'enabled' even when the clock downstream
+	 * of this clock is disabled, then handoff code will unnecessarily
+	 * enable the current parent of this clock. If this function always
+	 * returns 'disabled' and a clock downstream is on, the clock handoff
+	 * code will bump up the ref count for this clock and its current
+	 * parent as necessary. So, clocks without an actual HW gate can
+	 * always return disabled.
+	 */
 	return HANDOFF_DISABLED_CLK;
 }
 

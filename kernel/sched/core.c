@@ -1746,6 +1746,7 @@ static int __init set_sched_ravg_window(char *str)
 
 early_param("sched_ravg_window", set_sched_ravg_window);
 
+extern u64 arch_counter_get_cntpct(void);
 static inline void
 update_window_start(struct rq *rq, u64 wallclock)
 {
@@ -1753,7 +1754,13 @@ update_window_start(struct rq *rq, u64 wallclock)
 	int nr_windows;
 
 	delta = wallclock - rq->window_start;
-	BUG_ON(delta < 0);
+	
+	if (delta < 0) {
+		if (arch_counter_get_cntpct() == 0)
+			delta = 0;
+		else
+			BUG_ON(1);
+	}
 	if (delta < sched_ravg_window)
 		return;
 
@@ -5293,7 +5300,8 @@ static noinline void __schedule_bug(struct task_struct *prev)
 static inline void schedule_debug(struct task_struct *prev)
 {
 #ifdef CONFIG_SCHED_STACK_END_CHECK
-	BUG_ON(unlikely(task_stack_end_corrupted(prev)));
+       if (task_stack_end_corrupted(prev))
+               panic("corrupted stack end detected inside scheduler\n");
 #endif
 	/*
 	 * Test if we are atomic. Since do_exit() needs to call into

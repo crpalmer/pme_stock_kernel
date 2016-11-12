@@ -1013,7 +1013,7 @@ temp_notify_store(struct device *dev, struct device_attribute *attr,
        if (kstrtoul(buf, 10, &value))
               return -EINVAL;
 
-       if (value == 1) 
+       if (value == 1) //num 1 2 3 here just standfor an indicator, not means temp
               status = kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, clr_shutdown_warning);
        if (value == 2)
               status = kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, shutdown_waring);

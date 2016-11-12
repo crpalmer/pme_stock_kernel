@@ -377,6 +377,9 @@ void htc_timer_stats_show(u16 water_mark)
         int i;
 
         mutex_lock(&show_mutex);
+        /*
+         * If still active then calculate up to now:
+         */
         if (timer_stats_active)
                 time_stop = ktime_get();
 

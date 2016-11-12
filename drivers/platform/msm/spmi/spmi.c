@@ -779,6 +779,7 @@ EXPORT_SYMBOL_GPL(spmi_driver_register);
 #ifdef CONFIG_HTC_POWER_DEBUG
 #define MAX_REG_PER_TRANSACTION	(8)
 
+/* PON Peripheral registers */
 #define PON_REVISION2				0x801
 #define PON_PON_REASON1				0x808
 #define PON_WARM_RESET_REASON1			0x80A
@@ -938,24 +939,24 @@ uint8_t poff_reason_2 = 0xFF;
 
 void htc_get_pon_boot_reason(struct spmi_controller *ctrl)
 {
-	
+	/* PON_PON_REASON */
 	if (reason_1 == 0xFF)
 		htc_spmi_read_data(ctrl, &reason_1, PON_PON_REASON1, 1);
 
-	
+	/* PON_WARM_RESET_REASON */
 	if (warm_reset_reason_1 == 0xFF)
 		htc_spmi_read_data(ctrl, &warm_reset_reason_1, PON_WARM_RESET_REASON1, 1);
 	if (warm_reset_reason_2 == 0xFF)
 		htc_spmi_read_data(ctrl, &warm_reset_reason_2, PON_WARM_RESET_REASON2, 1);
 
-	
+	/* PON_SOFT_RESET_REASON */
 	if (soft_reset_reason_1 == 0xFF)
 		htc_spmi_read_data(ctrl, &soft_reset_reason_1, PON_SOFT_RESET_REASON1, 1);
 
 	if (soft_reset_reason_2 == 0xFF)
 		htc_spmi_read_data(ctrl, &soft_reset_reason_2, PON_SOFT_RESET_REASON2, 1);
 
-	
+	/* PON_POFF_REASON1 */
 	if (poff_reason_1 == 0xFF)
 		htc_spmi_read_data(ctrl, &poff_reason_1, PON_POFF_REASON1, 1);
 	if (poff_reason_2 == 0xFF)
@@ -964,21 +965,21 @@ void htc_get_pon_boot_reason(struct spmi_controller *ctrl)
 
 void htc_print_pon_boot_reason(void)
 {
-	
+	/* PON_PON_REASON */
 	printk(KERN_INFO "PON_PON_REASON:\n");
 	htc_print_reset_reason(PON_PON_REASON1, reason_1);
 
-	
+	/* PON_WARM_RESET_REASON */
 	printk(KERN_INFO "PON_WARM_RESET_REASON:\n");
 	htc_print_reset_reason(PON_WARM_RESET_REASON1, warm_reset_reason_1);
 	htc_print_reset_reason(PON_WARM_RESET_REASON2, warm_reset_reason_2);
 
-	
+	/* PON_SOFT_RESET_REASON */
 	printk(KERN_INFO "PON_SOFT_RESET_REASON:\n");
 	htc_print_reset_reason(PON_SOFT_RESET_REASON1, soft_reset_reason_1);
 	htc_print_reset_reason(PON_SOFT_RESET_REASON2, soft_reset_reason_2);
 
-	
+	/* PON_POFF_REASON1 */
 	printk(KERN_INFO "PON_POFF_REASON:\n");
 	htc_print_reset_reason(PON_POFF_REASON1, poff_reason_1);
 	htc_print_reset_reason(PON_POFF_REASON2, poff_reason_2);
@@ -1011,7 +1012,7 @@ static int spmi_register_controller(struct spmi_controller *ctrl)
 	spmi_dfs_add_controller(ctrl);
 
 #ifdef CONFIG_HTC_POWER_DEBUG
-	
+	/* Get the boot reason from kernel */
 	htc_get_pon_boot_reason(ctrl);
 	htc_print_pon_boot_reason();
 #endif 

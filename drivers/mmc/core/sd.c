@@ -1145,6 +1145,10 @@ static void mmc_sd_remove(struct mmc_host *host)
 
 /*
  * Card detection - card is alive.
+ * We don't care card is alive or not.
+ * If SD can be detect, we'll reinit it anyway.
+ * return 0 : SD alive, inserted
+ * return 1 : SD dead, ejected
  */
 static int mmc_sd_alive(struct mmc_host *host)
 {
@@ -1163,6 +1167,9 @@ static void mmc_sd_detect(struct mmc_host *host)
 
 	mmc_get_card(host->card);
 
+	/*
+	 * Just check if our card has been removed.
+	 */
 	err = _mmc_detect_card_removed(host);
 
 	mmc_put_card(host->card);
@@ -1243,7 +1250,7 @@ static int _mmc_sd_resume(struct mmc_host *host)
 	BUG_ON(!host->card);
 
 	host->crc_count = 0;
-	
+	/* Recover Host capabilities */
 	host->caps |= host->caps_uhs;
 
 	mmc_claim_host(host);

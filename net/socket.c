@@ -588,18 +588,28 @@ const struct file_operations bad_sock_fops = {
 	.llseek = noop_llseek,
 };
 
+/**
+ *	sock_release	-	close a socket
+ *	@sock: socket to close
+ *
+ *	The socket is released from the protocol stack if it has a release
+ *	callback, and the inode is then released if the socket is bound to
+ *	an inode not a file.
+ */
+/* +SSD_RIL: Garbage_Filter_TCP */
 #ifdef CONFIG_HTC_GARBAGE_FILTER
 extern int add_or_remove_port(struct sock *sk, int add_or_remove);
 #endif
+/* -SSD_RIL: Garbage_Filter_TCP */
 
 void sock_release(struct socket *sock)
 {
-	
+	/* ++SSD_RIL: Garbage_Filter_TCP */
         #ifdef CONFIG_HTC_GARBAGE_FILTER
 	if (sock->sk != NULL)
 		add_or_remove_port(sock->sk, 0);
         #endif
-	
+	/* --SSD_RIL: Garbage_Filter_TCP */
 
 	if (sock->ops) {
 		struct module *owner = sock->ops->owner;
@@ -1599,12 +1609,12 @@ SYSCALL_DEFINE2(listen, int, fd, int, backlog)
 		}
 		fput_light(sock->file, fput_needed);
 
-		
+		/* ++SSD_RIL: Garbage_Filter_TCP */
                 #ifdef CONFIG_HTC_GARBAGE_FILTER
 		if (sock->sk != NULL)
 			add_or_remove_port(sock->sk, 1);
                 #endif
-		
+		/* --SSD_RIL: Garbage_Filter_TCP */
 	}
 	return err;
 }
@@ -1833,6 +1843,8 @@ SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
 
 	if (len > INT_MAX)
 		len = INT_MAX;
+	if (unlikely(!access_ok(VERIFY_READ, buff, len)))
+		return -EFAULT;
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
@@ -1892,6 +1904,8 @@ SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
 
 	if (size > INT_MAX)
 		size = INT_MAX;
+	if (unlikely(!access_ok(VERIFY_WRITE, ubuf, size)))
+		return -EFAULT;
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
 	if (!sock)
 		goto out;
@@ -3165,11 +3179,11 @@ struct rtentry32 {
 	unsigned char	rt_tos;
 	unsigned char	rt_class;
 	short		rt_pad4;
-	short		rt_metric;      
-	 u32 rt_dev;        
-	u32		rt_mtu;         
-	u32		rt_window;      
-	unsigned short  rt_irtt;        
+	short		rt_metric;      /* +1 for binary compatibility! */
+	/* char * */ u32 rt_dev;        /* forcing the device at add    */
+	u32		rt_mtu;         /* per route MTU/Window         */
+	u32		rt_window;      /* Window clamping              */
+	unsigned short  rt_irtt;        /* Initial RTT                  */
 };
 
 struct in6_rtmsg32 {

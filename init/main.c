@@ -129,6 +129,7 @@ char __initdata boot_command_line[COMMAND_LINE_SIZE];
 /* Untouched saved command line (eg. for /proc) */
 char *saved_command_line;
 char *hashed_command_line;
+/* Command line for parameter parsing */
 static char *static_command_line;
 /* Command line for per-initcall parameter parsing */
 static char *initcall_command_line;
@@ -426,6 +427,14 @@ static void __init hash_sn(void)
    }
 }
 
+/*
+ * We need to finalize in a non-__init function or else race conditions
+ * between the root thread and the init thread may cause start_kernel to
+ * be reaped by free_initmem before the root thread has proceeded to
+ * cpu_idle.
+ *
+ * gcc-3.4 accidentally inlines this function, so use noinline.
+ */
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 

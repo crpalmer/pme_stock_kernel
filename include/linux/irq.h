@@ -850,4 +850,4 @@ static inline void irq_gc_unlock(struct irq_chip_generic *gc) { }
 #ifdef CONFIG_HTC_POWER_DEBUG
 void htc_show_interrupts(void);
 #endif
-#endif 
+#endif /* _LINUX_IRQ_H */

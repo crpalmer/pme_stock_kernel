@@ -78,6 +78,11 @@ extern void update_cpu_load_active(struct rq *this_rq);
 
 #define SCHED_LOAD_WINDOW_SIZE  10
 
+/*
+ * Single value that decides SCHED_DEADLINE internal math precision.
+ * 10 -> just above 1us
+ * 9  -> just above 0.5us
+ */
 #define DL_SCALE (10)
 
 /*
@@ -1513,10 +1518,13 @@ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
 	raw_spin_unlock_irq(&rq->lock);
 }
 
-#define WF_SYNC		0x01		
-#define WF_FORK		0x02		
-#define WF_MIGRATED	0x4		
-#define WF_NO_NOTIFIER	0x08		
+/*
+ * wake flags
+ */
+#define WF_SYNC		0x01		/* waker goes to sleep after wakeup */
+#define WF_FORK		0x02		/* child wakeup after fork */
+#define WF_MIGRATED	0x4		/* internal use, task got migrated */
+#define WF_NO_NOTIFIER	0x08		/* do not notify governor */
 
 /*
  * To aid in avoiding the subversion of "niceness" due to uneven distribution

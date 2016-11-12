@@ -493,6 +493,7 @@ static void msm_gpio_free(struct gpio_chip *chip, unsigned offset)
 
 #ifdef CONFIG_HTC_POWER_DEBUG
 struct gpio_chip *g_chip;
+/* msm_dump_gpios is reference to msm_gpio_dbg_show_one function */
 int msm_dump_gpios(struct seq_file *m, int curr_len, char *gpio_buffer)
 {
 	const struct msm_pingroup *g;

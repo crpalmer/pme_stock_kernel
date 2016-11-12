@@ -1642,7 +1642,7 @@ static void silabs_af_tune(struct work_struct *work)
 
 			FMDBG("%s: found AF freq(%u) >= AF th with pi %d\n",
 				__func__, freq, radio->pi);
-			
+			/* Notify FM UI about the new freq */
 			FMDINFO("%s: posting TUNE_SUCC event\n", __func__);
 			silabs_fm_q_event(radio, SILABS_EVT_TUNE_SUCC);
 
@@ -2312,6 +2312,10 @@ static void silabs_interrupts_handler(struct silabs_fm_device *radio)
 			FMDBG("In %s, signalling scan thread\n", __func__);
 			complete(&radio->sync_req_done);
 		} else if (radio->is_af_tune_in_progress == true) {
+			/*
+			 * when AF tune is going on and STC int is set, signal
+			 * so that AF tune can proceed.
+			 */
 			FMDINFO("In %s, signalling AF tune thread\n", __func__);
 			complete(&radio->sync_req_done);
 		}
@@ -3400,7 +3404,7 @@ static int silabs_fm_vidioc_s_hw_freq_seek(struct file *file, void *priv,
 	radio->is_search_cancelled = false;
 
 	if (radio->g_search_mode == SEEK) {
-		
+		/* seek */
 		FMDINFO("starting seek\n");
 
 		radio->seek_tune_status = SEEK_PENDING;
@@ -3660,8 +3664,8 @@ static int silabs_fm_probe(struct i2c_client *client,
 		 */
 		if (PTR_ERR(vreg) == -EPROBE_DEFER) {
 			FMDERR("In %s, areg probe defer\n", __func__);
-			
-			
+			// VA is always on from battery
+			//return PTR_ERR(vreg);
 		}
 	}
 	/* private data allocation */

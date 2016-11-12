@@ -390,7 +390,7 @@ static void purge_vmap_area_lazy(void);
 
 #ifdef CONFIG_HTC_DEBUG_VMALLOC_DUMP
 
-#define DUMP_VMALLOC_INTERVAL  10*HZ 
+#define DUMP_VMALLOC_INTERVAL  10*HZ // the interval for each vmalloc dump
 #define MLM(b, t) b, t, ((t) - (b)) >> 20
 
 void dump_vmallocinfo(void)
@@ -461,10 +461,14 @@ void dump_vmallocinfo(void)
 }
 EXPORT_SYMBOL(dump_vmallocinfo);
 
-static unsigned long last_dump_jiffies = 0; 
+static unsigned long last_dump_jiffies = 0; // controls the dump interval.
 
 #endif
 
+/*
+ * Allocate a region of KVA of the specified size and alignment, within the
+ * vstart and vend.
+ */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long align,
 				unsigned long vstart, unsigned long vend,

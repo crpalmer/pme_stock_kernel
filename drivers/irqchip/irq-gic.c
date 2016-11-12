@@ -441,7 +441,7 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 			uncached_logk_pc(LOGK_IRQ, (void *)(uintptr_t)htc_debug_get_sched_clock_ms(), (void *)(uintptr_t)irqnr);
 #else
 			uncached_logk(LOGK_IRQ, (void *)(uintptr_t)irqnr);
-#endif 
+#endif /* CONFIG_HTC_DEBUG_RTB */
 			handle_domain_irq(gic->domain, irqnr, regs);
 			continue;
 		}
@@ -451,7 +451,7 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 			uncached_logk_pc(LOGK_IRQ, (void *)(uintptr_t)htc_debug_get_sched_clock_ms(), (void *)(uintptr_t)irqnr);
 #else
 			uncached_logk(LOGK_IRQ, (void *)(uintptr_t)irqnr);
-#endif 
+#endif /* CONFIG_HTC_DEBUG_RTB */
 #ifdef CONFIG_SMP
 			handle_IPI(irqnr, regs);
 #endif

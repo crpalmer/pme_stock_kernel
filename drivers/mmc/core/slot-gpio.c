@@ -55,7 +55,7 @@ static irqreturn_t mmc_gpio_cd_irqt(int irq, void *dev_id)
 	mmc_detect_change(host, msecs_to_jiffies(200));
 	mmc_gpio_send_uevent(host);
 	host->removed_cnt = 0;
-	
+	/* Recover Host capabilities */
 	host->caps |= host->caps_uhs;
 	host->crc_count = 0;
 

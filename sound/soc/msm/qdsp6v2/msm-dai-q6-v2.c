@@ -27,7 +27,7 @@
 #include <sound/q6afe-v2.h>
 #include <sound/msm-dai-q6-v2.h>
 #include <sound/pcm_params.h>
-#include <sound/htc_acoustic_alsa.h>
+#include <sound/htc_acoustic_alsa.h>//HTC_AUD
 
 #define MSM_DAI_PRI_AUXPCM_DT_DEV_ID 1
 #define MSM_DAI_SEC_AUXPCM_DT_DEV_ID 2
@@ -2395,9 +2395,11 @@ static int msm_auxpcm_dev_probe(struct platform_device *pdev)
 		goto fail_reg_dai;
 	}
 
+//HTC_AUD_START: Store PRI_AUX device for FTM pinctrl
 	if (!strncmp(intf_name, "primary", sizeof("primary"))) {
 		register_htc_ftm_dev(&pdev->dev);
 	}
+//HTC_AUD_END
 
 	return rc;
 

@@ -932,7 +932,7 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
 	struct freq_attr **drv_attr;
 	int ret = 0;
 
-	
+	/* set up files for this cpu device */
 	drv_attr = cpufreq_driver->attr;
 	while ((drv_attr) && (*drv_attr)) {
 		ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
@@ -1077,7 +1077,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(struct device *dev)
 	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
 		goto err_free_cpumask;
 
-	
+	/* prepare interface data */
 	if (kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
 				   &dev->kobj, "cpufreq"))
 		goto err_free_rcpumask;
@@ -1348,7 +1348,7 @@ err_get_freq:
 	if (cpufreq_driver->exit)
 		cpufreq_driver->exit(policy);
 err_set_policy_cpu:
-	
+	/* Do not leave stale fallback data behind. */
 	per_cpu(cpufreq_cpu_data_fallback, cpu) = NULL;
 	cpufreq_policy_put_kobj(policy);
 	cpufreq_policy_free(policy);

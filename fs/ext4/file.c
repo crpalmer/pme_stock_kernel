@@ -122,6 +122,10 @@ ext4_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 	trace_ext4_file_write(iocb->ki_filp->f_path.dentry, iocb->ki_nbytes);
 
+	/*
+	 * If we have encountered a bitmap-format file, the size limit
+	 * is smaller than s_maxbytes, which is for extent-mapped files.
+	 */
 	if (!(ext4_test_inode_flag(inode, EXT4_INODE_EXTENTS))) {
 		struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
 
